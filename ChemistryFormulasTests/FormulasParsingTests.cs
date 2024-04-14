@@ -13,4 +13,14 @@ public class FormulasParsingTests
     {
         Assert.Empty(FormulasParsing.ParseFormula(string.Empty));
     }
+
+    /// <summary>
+    /// ¬озвращает количество химического элемента, равное единице, при передаче формулы
+    /// с единственным химическим элементом.
+    /// </summary>
+    [Fact]
+    public void ParseFormula_SingleElement_SingleElementCount()
+    {
+        Assert.Equal("H:1", FormulasParsing.ParseFormula("H"));
+    }
 }

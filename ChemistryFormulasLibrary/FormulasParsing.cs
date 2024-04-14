@@ -5,6 +5,11 @@
 /// </summary>
 public class FormulasParsing
 {
+    /// <summary>
+    /// Возвращает результат парсинга химической формулы.
+    /// </summary>
+    /// <param name="formula">Химическая формула для парсинга.</param>
+    /// <returns>Результат парсинга.</returns>
     public static string ParseFormula(string formula)
     {
         if (string.IsNullOrEmpty(formula))
@@ -12,6 +17,6 @@ public class FormulasParsing
             return "";
         }
 
-        return "result";
+        return $"{formula}:1";
     }
 }
