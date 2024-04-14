@@ -1,6 +1,5 @@
 ﻿namespace ChemistryFormulas;
 
-using System;
 using System.Text;
 
 /// <summary>
@@ -8,6 +7,9 @@ using System.Text;
 /// </summary>
 public class FormulasParsing
 {
+    private static string _formula;
+    private static int _length;
+
     /// <summary>
     /// Возвращает результат парсинга химической формулы.
     /// </summary>
@@ -15,30 +17,45 @@ public class FormulasParsing
     /// <returns>Результат парсинга.</returns>
     public static string ParseFormula(string formula)
     {
-        if (string.IsNullOrEmpty(formula))
+        _formula = formula;
+
+        if (string.IsNullOrEmpty(_formula))
         {
             return "";
         }
 
-        var length = formula.Length;
-        var numberIndex = 0;
-
-        for (numberIndex = 0; numberIndex < length; numberIndex++)
-        {
-            if (char.IsDigit(formula[numberIndex]))
-            {
-                break;
-            }
-        }
+        _length = _formula.Length;
+        var numberIndex = GetNumberIndex();
 
         return
             new StringBuilder()
-                .Append(formula.Substring(0, numberIndex))
+                .Append(_formula.Substring(0, numberIndex))
                 .Append(':')
                 .Append(
-                    numberIndex == length
+                    numberIndex == _length
                         ? '1'
-                        : formula.Substring(numberIndex))
+                        : _formula.Substring(numberIndex))
                 .ToString();
+    }
+
+    /// <summary>
+    /// Возвращает индекс следующего числа в формуле.
+    /// </summary>
+    /// <returns>Индекс следующего числа в формуле.</returns>
+    private static int GetNumberIndex()
+    {
+        int numberIndex = 0;
+
+        while (numberIndex < _length)
+        {
+            if (char.IsDigit(_formula[numberIndex]))
+            {
+                break;
+            }
+
+            numberIndex++;
+        }
+
+        return numberIndex;
     }
 }
