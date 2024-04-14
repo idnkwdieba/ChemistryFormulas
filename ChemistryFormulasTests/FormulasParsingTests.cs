@@ -5,9 +5,12 @@ namespace ChemistryFormulas.Tests;
 /// </summary>
 public class FormulasParsingTests
 {
+    /// <summary>
+    /// Возвращает пустую строку при передаче пустой строки.
+    /// </summary>
     [Fact]
-    public void Test1()
+    public void ParseFormula_EmptyString_EmptyString()
     {
-
+        Assert.Empty(FormulasParsing.ParseFormula(string.Empty));
     }
 }
