@@ -1,5 +1,8 @@
 ﻿namespace ChemistryFormulas;
 
+using System;
+using System.Text;
+
 /// <summary>
 /// Парсинг химических формул.
 /// </summary>
@@ -17,6 +20,25 @@ public class FormulasParsing
             return "";
         }
 
-        return $"{formula}:1";
+        var length = formula.Length;
+        var numberIndex = 0;
+
+        for (numberIndex = 0; numberIndex < length; numberIndex++)
+        {
+            if (char.IsDigit(formula[numberIndex]))
+            {
+                break;
+            }
+        }
+
+        return
+            new StringBuilder()
+                .Append(formula.Substring(0, numberIndex))
+                .Append(':')
+                .Append(
+                    numberIndex == length
+                        ? '1'
+                        : formula.Substring(numberIndex))
+                .ToString();
     }
 }

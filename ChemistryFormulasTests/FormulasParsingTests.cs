@@ -23,4 +23,14 @@ public class FormulasParsingTests
     {
         Assert.Equal("H:1", FormulasParsing.ParseFormula("H"));
     }
+
+    /// <summary>
+    /// Возвращает количество химического элемента, равное двум, при передаче формулы
+    /// с одним химическим элементом, количество которого равно двум.
+    /// </summary>
+    [Fact]
+    public void ParseFormula_DoubleElement_ElementCountEqualsTwo()
+    {
+        Assert.Equal("H:2", FormulasParsing.ParseFormula("H2"));
+    }
 }
