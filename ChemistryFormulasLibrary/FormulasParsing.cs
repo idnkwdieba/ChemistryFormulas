@@ -137,7 +137,7 @@ public class FormulasParsing
     /// Возвращает текущий химический элемент, усекает строку химической формулы.
     /// </summary>
     /// <returns>Текущий химический элемент.</returns>
-    private static string GetCurrentElem()
+    private static string GetCurrentChemicalFormulaPiece()
     {
         var chemicalElemEndIndex = GetChemicalElemEndIndex();
 
@@ -165,22 +165,67 @@ public class FormulasParsing
     /// <returns>Данные о химическом элементе.</returns>
     private static Dictionary<string, int> GetChemicalElemData()
     {
-        var chemicalElem = GetCurrentElem();
+        var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
 
-        var numberIndex = GetNumberIndex(chemicalElem);
-        var length = chemicalElem.Length;
+        var numberIndex = GetNumberIndex(chemicalFormulaPiece);
+        var length = chemicalFormulaPiece.Length;
 
-        var elem = new Dictionary<string, int>();
+        var chemicalElems = new Dictionary<string, int>();
 
-        if (numberIndex == length)
+        var chemicalElemsMultiplier =
+            numberIndex == length
+                ? 1
+                : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
+
+        var isParenthesesBlockPresent =
+            chemicalFormulaPiece[0] == '('
+                ? true
+                : false;
+
+        if (!isParenthesesBlockPresent)
         {
-            elem.Add(chemicalElem, 1);
-        }
-        else
-        {
-            elem.Add(chemicalElem.Substring(0, numberIndex), Convert.ToInt32(chemicalElem[^1].ToString()));
+            chemicalElems.Add(
+                numberIndex == length
+                    ? chemicalFormulaPiece
+                    : chemicalFormulaPiece.Substring(0, numberIndex),
+                chemicalElemsMultiplier);
+
+            return chemicalElems;
         }
 
-        return elem;
+        var originalFormula = _formula;
+
+        _formula = chemicalFormulaPiece.Substring(
+            1,
+            chemicalFormulaPiece.Length -
+                numberIndex == length
+                    ? 1
+                    : 2);
+                _length = _formula.Length;
+
+        while (_length > 0)
+        {
+            chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
+
+            numberIndex = GetNumberIndex(chemicalFormulaPiece);
+            length = chemicalFormulaPiece.Length;
+
+            if (numberIndex == length)
+            {
+                chemicalElems.Add(chemicalFormulaPiece, chemicalElemsMultiplier);
+            }
+            else
+            {
+                chemicalElems.Add(
+                    chemicalFormulaPiece.Substring(0, numberIndex),
+                    Convert.ToInt32(chemicalFormulaPiece[^1].ToString()) 
+                        * chemicalElemsMultiplier);
+            }
+        }
+
+        _formula = originalFormula;
+        _length = _formula.Length;
+
+        return chemicalElems;
     }
 }
