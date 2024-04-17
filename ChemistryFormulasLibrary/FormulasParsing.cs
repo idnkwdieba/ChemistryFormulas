@@ -22,7 +22,7 @@ public class FormulasParsing
 
         var parseResult = new Dictionary<string, int>();
 
-        var curChemicalElem = new Dictionary<string, int>();
+        var curChemicalElemsDictionary = new Dictionary<string, int>();
         string curChemicalElemKey;
 
         var result = new StringBuilder();
@@ -38,14 +38,16 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            curChemicalElem = GetChemicalElemData();
-            curChemicalElemKey = curChemicalElem.Keys.First();
+            curChemicalElemsDictionary = GetChemicalElemData();
 
-            // Если такой элемент уже существует в словаре.
-            if (!parseResult.TryAdd(curChemicalElemKey, curChemicalElem[curChemicalElemKey]))
+            foreach(var chemicalElem in curChemicalElemsDictionary) 
             {
-                // Увеличиваем счетчик таких элементов.
-                parseResult[curChemicalElemKey] += curChemicalElem[curChemicalElemKey];
+                // Если такой элемент уже существует в словаре.
+                if (!parseResult.TryAdd(chemicalElem.Key, chemicalElem.Value))
+                {
+                    // Увеличиваем счетчик таких элементов.
+                    parseResult[chemicalElem.Key] += chemicalElem.Value;
+                }
             }
         }
 
@@ -73,17 +75,34 @@ public class FormulasParsing
     {
         var chemicalElemEndIndex = 0;
 
+        var isParenthesesBlockClosed =
+            _formula[0] == '('
+                ? false
+                : true;
+
         while (chemicalElemEndIndex < _length)
         {
-            if (chemicalElemEndIndex != 0 && char.IsUpper(_formula[chemicalElemEndIndex]))
+            if (chemicalElemEndIndex != 0 
+                && (char.IsUpper(_formula[chemicalElemEndIndex]) || _formula[chemicalElemEndIndex] == '('))
             {
-                break;
+                if (isParenthesesBlockClosed)
+                {
+                    break;
+                }
             }
 
             if (char.IsDigit(_formula[chemicalElemEndIndex]))
             {
-                chemicalElemEndIndex++;
-                break;
+                if (isParenthesesBlockClosed)
+                {
+                    chemicalElemEndIndex++;
+                    break;
+                }
+            }
+
+            if (_formula[chemicalElemEndIndex] == ')')
+            {
+                isParenthesesBlockClosed = true;
             }
 
             chemicalElemEndIndex++;
