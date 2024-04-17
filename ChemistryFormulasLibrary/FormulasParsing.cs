@@ -8,7 +8,14 @@ using System.Text;
 /// </summary>
 public class FormulasParsing
 {
+    /// <summary>
+    /// Химическая формула.
+    /// </summary>
     private static string _formula;
+
+    /// <summary>
+    /// Длина строки химической формулы.
+    /// </summary>
     private static int _length;
 
     /// <summary>
@@ -18,29 +25,23 @@ public class FormulasParsing
     /// <returns>Результат парсинга.</returns>
     public static string ParseFormula(string formula)
     {
+        if (string.IsNullOrEmpty(formula))
+        {
+            return "";
+        }
+
         _formula = formula;
+        _length = formula.Length;
 
         var parseResult = new Dictionary<string, int>();
-
-        var curChemicalElemsDictionary = new Dictionary<string, int>();
-        string curChemicalElemKey;
 
         var result = new StringBuilder();
 
         var remainingCommaCount = 0;
 
-        if (string.IsNullOrEmpty(_formula))
-        {
-            return "";
-        }
-
-        _length = _formula.Length;
-
         while (_length > 0)
         {
-            curChemicalElemsDictionary = GetChemicalElemData();
-
-            foreach(var chemicalElem in curChemicalElemsDictionary) 
+            foreach (var chemicalElem in GetChemicalElemData())
             {
                 // Если такой элемент уже существует в словаре.
                 if (!parseResult.TryAdd(chemicalElem.Key, chemicalElem.Value))
@@ -82,7 +83,7 @@ public class FormulasParsing
 
         while (chemicalElemEndIndex < _length)
         {
-            if (chemicalElemEndIndex != 0 
+            if (chemicalElemEndIndex != 0
                 && (char.IsUpper(_formula[chemicalElemEndIndex]) || _formula[chemicalElemEndIndex] == '('))
             {
                 if (isParenthesesBlockClosed)
@@ -111,9 +112,11 @@ public class FormulasParsing
         return chemicalElemEndIndex;
     }
 
+
     /// <summary>
     /// Возвращает индекс числа в химическом элементе.
     /// </summary>
+    /// <param name="chemicalElemString">Строка с химическим элементом.</param>
     /// <returns>Индекс числа в химическом элементе.</returns>
     private static int GetNumberIndex(string chemicalElemString)
     {
@@ -160,9 +163,9 @@ public class FormulasParsing
     }
 
     /// <summary>
-    /// Возвращает данные о текущем химическом элементе.
+    /// Возвращает химические элементы и их количество.
     /// </summary>
-    /// <returns>Данные о химическом элементе.</returns>
+    /// <returns>Данные о химических элементах.</returns>
     private static Dictionary<string, int> GetChemicalElemData()
     {
         var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
@@ -195,13 +198,14 @@ public class FormulasParsing
 
         var originalFormula = _formula;
 
+        // Временная замена химической формулы для работы с выражением в скобках.
         _formula = chemicalFormulaPiece.Substring(
             1,
             chemicalFormulaPiece.Length -
                 numberIndex == length
                     ? 1
                     : 2);
-                _length = _formula.Length;
+        _length = _formula.Length;
 
         while (_length > 0)
         {
@@ -218,13 +222,13 @@ public class FormulasParsing
             {
                 chemicalElems.Add(
                     chemicalFormulaPiece.Substring(0, numberIndex),
-                    Convert.ToInt32(chemicalFormulaPiece[^1].ToString()) 
+                    Convert.ToInt32(chemicalFormulaPiece[^1].ToString())
                         * chemicalElemsMultiplier);
             }
         }
 
         _formula = originalFormula;
-        _length = _formula.Length;
+        _length = originalFormula.Length;
 
         return chemicalElems;
     }

@@ -53,7 +53,7 @@ public class FormulasParsingTests
     {
         Assert.Equal("C:2,H:6,O:1", FormulasParsing.ParseFormula("C2H5OH"));
     }
-    
+
     /// <summary>
     /// Возвращает корректное количество химических элементов в формуле,
     /// в которой один и тот же химический элемент встречается несколько раз.
