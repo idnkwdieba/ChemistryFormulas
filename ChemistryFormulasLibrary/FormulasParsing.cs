@@ -1,5 +1,6 @@
 ﻿namespace ChemistryFormulas;
 
+using System.Collections.Generic;
 using System.Text;
 
 /// <summary>
@@ -19,23 +20,49 @@ public class FormulasParsing
     {
         _formula = formula;
 
+        var parseResult = new Dictionary<string, int>();
+
+        var curChemicalElem = new Dictionary<string, int>();
+        string curChemicalElemKey;
+
+        var result = new StringBuilder();
+
+        var remainingCommaCount = 0;
+
         if (string.IsNullOrEmpty(_formula))
         {
             return "";
         }
 
         _length = _formula.Length;
-        var numberIndex = GetNumberIndex();
 
-        return
-            new StringBuilder()
-                .Append(_formula.Substring(0, numberIndex))
-                .Append(':')
-                .Append(
-                    numberIndex == _length
-                        ? '1'
-                        : _formula.Substring(numberIndex))
-                .ToString();
+        while (_length > 0)
+        {
+            curChemicalElem = GetChemicalElemData();
+            curChemicalElemKey = curChemicalElem.Keys.First();
+
+            // Если такой элемент уже существует в словаре.
+            if (!parseResult.TryAdd(curChemicalElemKey, curChemicalElem[curChemicalElemKey]))
+            {
+                // Увеличиваем счетчик таких элементов.
+                parseResult[curChemicalElemKey] += curChemicalElem[curChemicalElemKey];
+            }
+        }
+
+        remainingCommaCount = parseResult.Count - 1;
+
+        foreach (var elem in parseResult)
+        {
+            result.Append($"{elem.Key}:{elem.Value}");
+
+            if (remainingCommaCount > 0)
+            {
+                result.Append(',');
+                remainingCommaCount--;
+            }
+        }
+
+        return result.ToString();
     }
 
     /// <summary>
@@ -44,7 +71,7 @@ public class FormulasParsing
     /// <returns>Индекс следующего числа в формуле.</returns>
     private static int GetNumberIndex()
     {
-        int numberIndex = 0;
+        var numberIndex = 0;
 
         while (numberIndex < _length)
         {
@@ -57,5 +84,78 @@ public class FormulasParsing
         }
 
         return numberIndex;
+    }
+
+    /// <summary>
+    /// Возвращает индекс числа в химическом элементе.
+    /// </summary>
+    /// <returns>Индекс числа в химическом элементе.</returns>
+    private static int GetNumberIndex(string chemicalElemString)
+    {
+        var numberIndex = 0;
+        var length = chemicalElemString.Length;
+
+        while (numberIndex < length)
+        {
+            if (char.IsDigit(chemicalElemString[numberIndex]))
+            {
+                break;
+            }
+
+            numberIndex++;
+        }
+
+        return numberIndex;
+    }
+
+    /// <summary>
+    /// Возвращает текущий химический элемент, усекает строку химической формулы.
+    /// </summary>
+    /// <returns>Текущий химический элемент.</returns>
+    private static string GetCurrentElem()
+    {
+        var numberIndex = GetNumberIndex();
+
+        string curChemicalElem;
+        string curChemicalElemCount;
+
+        curChemicalElem =
+            numberIndex == _length
+                ? _formula
+                : _formula.Substring(0, numberIndex + 1);
+
+        _formula =
+            numberIndex >= _length - 1
+                ? string.Empty
+                : _formula.Substring(numberIndex + 1);
+
+        _length = _formula.Length;
+
+        return curChemicalElem;
+    }
+
+    /// <summary>
+    /// Возвращает данные о текущем химическом элементе.
+    /// </summary>
+    /// <returns>Данные о химическом элементе.</returns>
+    private static Dictionary<string, int> GetChemicalElemData()
+    {
+        var chemicalElem = GetCurrentElem();
+
+        var numberIndex = GetNumberIndex(chemicalElem);
+        var length = chemicalElem.Length;
+
+        var elem = new Dictionary<string, int>();
+
+        if (numberIndex == length)
+        {
+            elem.Add(chemicalElem, 1);
+        }
+        else
+        {
+            elem.Add(chemicalElem.Substring(0, numberIndex), Convert.ToInt32(chemicalElem[^1].ToString()));
+        }
+
+        return elem;
     }
 }

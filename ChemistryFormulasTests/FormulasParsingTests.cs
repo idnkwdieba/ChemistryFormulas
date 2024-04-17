@@ -33,4 +33,14 @@ public class FormulasParsingTests
     {
         Assert.Equal("H:2", FormulasParsing.ParseFormula("H2"));
     }
+
+    /// <summary>
+    /// Возвращает корректное количество химических элементов в формуле,
+    /// в которой есть два разных химических элемента.
+    /// </summary>
+    [Fact]
+    public void ParseFormula_MultipleElements_CorrectElemetsCount()
+    {
+        Assert.Equal("H:2,O:1", FormulasParsing.ParseFormula("H2O"));
+    }
 }
