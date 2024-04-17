@@ -66,24 +66,30 @@ public class FormulasParsing
     }
 
     /// <summary>
-    /// Возвращает индекс следующего числа в формуле.
+    /// Возвращает индекс следующего химического элемента в формуле.
     /// </summary>
-    /// <returns>Индекс следующего числа в формуле.</returns>
-    private static int GetNumberIndex()
+    /// <returns>Индекс следующего химического элемента в формуле.</returns>
+    private static int GetChemicalElemEndIndex()
     {
-        var numberIndex = 0;
+        var chemicalElemEndIndex = 0;
 
-        while (numberIndex < _length)
+        while (chemicalElemEndIndex < _length)
         {
-            if (char.IsDigit(_formula[numberIndex]))
+            if (chemicalElemEndIndex != 0 && char.IsUpper(_formula[chemicalElemEndIndex]))
             {
                 break;
             }
 
-            numberIndex++;
+            if (char.IsDigit(_formula[chemicalElemEndIndex]))
+            {
+                chemicalElemEndIndex++;
+                break;
+            }
+
+            chemicalElemEndIndex++;
         }
 
-        return numberIndex;
+        return chemicalElemEndIndex;
     }
 
     /// <summary>
@@ -114,20 +120,20 @@ public class FormulasParsing
     /// <returns>Текущий химический элемент.</returns>
     private static string GetCurrentElem()
     {
-        var numberIndex = GetNumberIndex();
+        var chemicalElemEndIndex = GetChemicalElemEndIndex();
 
         string curChemicalElem;
         string curChemicalElemCount;
 
         curChemicalElem =
-            numberIndex == _length
+            chemicalElemEndIndex == _length
                 ? _formula
-                : _formula.Substring(0, numberIndex + 1);
+                : _formula.Substring(0, chemicalElemEndIndex);
 
         _formula =
-            numberIndex >= _length - 1
+            chemicalElemEndIndex >= _length
                 ? string.Empty
-                : _formula.Substring(numberIndex + 1);
+                : _formula.Substring(chemicalElemEndIndex);
 
         _length = _formula.Length;
 

@@ -12,6 +12,7 @@ internal class FormulasParsingApp
     static void Main(string[] args)
     {
         Console.WriteLine(FormulasParsing.ParseFormula("H2O"));
+        Console.WriteLine(FormulasParsing.ParseFormula("C2H5OH"));
     }
 }
 

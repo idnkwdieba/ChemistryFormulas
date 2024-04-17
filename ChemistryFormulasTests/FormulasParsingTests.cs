@@ -43,4 +43,14 @@ public class FormulasParsingTests
     {
         Assert.Equal("H:2,O:1", FormulasParsing.ParseFormula("H2O"));
     }
+
+    /// <summary>
+    /// Возвращает корректное количество химических элементов в формуле,
+    /// в которой один и тот же химический элемент встречается несколько раз.
+    /// </summary>
+    [Fact]
+    public void ParseFormula_ElementsMultipleOccurrences_CorrectElemetsCount()
+    {
+        Assert.Equal("C:2,H:6,O:1", FormulasParsing.ParseFormula("C2H5OH"));
+    }
 }
