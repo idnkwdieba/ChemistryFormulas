@@ -216,21 +216,10 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
-
-            numberIndex = GetNumberIndex(chemicalFormulaPiece);
-            length = chemicalFormulaPiece.Length;
-
-            if (numberIndex == length)
+            foreach(var elem in GetChemicalElemData())
             {
-                chemicalElems.Add(chemicalFormulaPiece, chemicalElemsMultiplier);
-                continue;
+                chemicalElems.Add(elem.Key, elem.Value * chemicalElemsMultiplier);
             }
-
-            chemicalElems.Add(
-                chemicalFormulaPiece.Substring(0, numberIndex),
-                Convert.ToInt32(chemicalFormulaPiece[^1].ToString())
-                    * chemicalElemsMultiplier);
         }
 
         _formula = originalFormula;
