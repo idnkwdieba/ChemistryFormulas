@@ -27,43 +27,46 @@ public class FormulasParsing
     {
         if (string.IsNullOrEmpty(formula))
         {
-            return "";
+            return string.Empty;
         }
 
         _formula = formula;
         _length = formula.Length;
 
-        var parseResult = new Dictionary<string, int>();
-
+        var chemicalElems = new Dictionary<string, int>();
         var result = new StringBuilder();
-
-        var remainingCommaCount = 0;
 
         while (_length > 0)
         {
-            foreach (var chemicalElem in GetChemicalElemData())
-            {
-                // Если такой элемент уже существует в словаре.
-                if (!parseResult.TryAdd(chemicalElem.Key, chemicalElem.Value))
+            GetChemicalElemData().ToList().ForEach
+            (
+                elem =>
                 {
-                    // Увеличиваем счетчик таких элементов.
-                    parseResult[chemicalElem.Key] += chemicalElem.Value;
+                    // Если такой элемент уже существует в словаре.
+                    if (!chemicalElems.TryAdd(elem.Key, elem.Value))
+                    {
+                        // Увеличиваем счетчик таких элементов.
+                        chemicalElems[elem.Key] += elem.Value;
+                    }
+                }
+            );
+        }
+
+        var remainingCommaCount = chemicalElems.Count - 1;
+
+        chemicalElems.ToList().ForEach
+        (
+            elem =>
+            {
+                result.Append($"{elem.Key}:{elem.Value}");
+
+                if (remainingCommaCount > 0)
+                {
+                    result.Append(',');
+                    remainingCommaCount--;
                 }
             }
-        }
-
-        remainingCommaCount = parseResult.Count - 1;
-
-        foreach (var elem in parseResult)
-        {
-            result.Append($"{elem.Key}:{elem.Value}");
-
-            if (remainingCommaCount > 0)
-            {
-                result.Append(',');
-                remainingCommaCount--;
-            }
-        }
+        );
 
         return result.ToString();
     }
@@ -76,15 +79,13 @@ public class FormulasParsing
     {
         var chemicalElemEndIndex = 0;
 
-        var isParenthesesBlockClosed =
-            _formula[0] == '('
-                ? false
-                : true;
+        var isParenthesesBlockClosed = _formula[0] != '(';
 
         while (chemicalElemEndIndex < _length)
         {
             if (chemicalElemEndIndex != 0
-                && (char.IsUpper(_formula[chemicalElemEndIndex]) || _formula[chemicalElemEndIndex] == '('))
+                && (char.IsUpper(_formula[chemicalElemEndIndex])
+                    || _formula[chemicalElemEndIndex] == '('))
             {
                 if (isParenthesesBlockClosed)
                 {
@@ -120,20 +121,12 @@ public class FormulasParsing
     /// <returns>Индекс числа в химическом элементе.</returns>
     private static int GetNumberIndex(string chemicalElemString)
     {
-        var numberIndex = 0;
-        var length = chemicalElemString.Length;
-
-        while (numberIndex < length)
-        {
-            if (char.IsDigit(chemicalElemString[numberIndex]))
-            {
-                break;
-            }
-
-            numberIndex++;
-        }
-
-        return numberIndex;
+        return chemicalElemString
+            .ToArray()
+            .Select((symbol, index) => new { index, symbol })
+                .Where(elem => char.IsDigit(elem.symbol))
+            .Select(elem => elem.index)
+            .FirstOrDefault(chemicalElemString.Length);
     }
 
     /// <summary>
@@ -217,14 +210,13 @@ public class FormulasParsing
             if (numberIndex == length)
             {
                 chemicalElems.Add(chemicalFormulaPiece, chemicalElemsMultiplier);
+                continue;
             }
-            else
-            {
-                chemicalElems.Add(
-                    chemicalFormulaPiece.Substring(0, numberIndex),
-                    Convert.ToInt32(chemicalFormulaPiece[^1].ToString())
-                        * chemicalElemsMultiplier);
-            }
+
+            chemicalElems.Add(
+                chemicalFormulaPiece.Substring(0, numberIndex),
+                Convert.ToInt32(chemicalFormulaPiece[^1].ToString())
+                    * chemicalElemsMultiplier);
         }
 
         _formula = originalFormula;
