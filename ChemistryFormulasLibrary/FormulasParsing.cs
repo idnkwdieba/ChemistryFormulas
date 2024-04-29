@@ -163,26 +163,26 @@ public class FormulasParsing
     {
         var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
 
+        // Если химические элементы обернуты в скобки.
         if (chemicalFormulaPiece[0] == '(')
         {
             return GetChemicalElemsParenthesesData(ref chemicalFormulaPiece);
         }
 
         var numberIndex = GetNumberIndex(chemicalFormulaPiece);
-        var length = chemicalFormulaPiece.Length;
-
         var chemicalElems = new Dictionary<string, int>();
 
-        var chemicalElemsMultiplier =
-            numberIndex == length
-                ? 1
-                : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
+        // Если после химического элемента не следует число.
+        if (numberIndex == chemicalFormulaPiece.Length)
+        {
+            chemicalElems.Add(chemicalFormulaPiece, 1);
+
+            return chemicalElems;
+        }
 
         chemicalElems.Add(
-            numberIndex == length
-                ? chemicalFormulaPiece
-                : chemicalFormulaPiece.Substring(0, numberIndex),
-            chemicalElemsMultiplier);
+            chemicalFormulaPiece.Substring(0, numberIndex),
+            Convert.ToInt32(chemicalFormulaPiece[^1].ToString()));
 
         return chemicalElems;
     }
