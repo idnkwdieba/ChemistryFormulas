@@ -163,6 +163,11 @@ public class FormulasParsing
     {
         var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
 
+        if (chemicalFormulaPiece[0] == '(')
+        {
+            return GetChemicalElemsParenthesesData(ref chemicalFormulaPiece);
+        }
+
         var numberIndex = GetNumberIndex(chemicalFormulaPiece);
         var length = chemicalFormulaPiece.Length;
 
@@ -173,23 +178,32 @@ public class FormulasParsing
                 ? 1
                 : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
 
-        var isParenthesesBlockPresent =
-            chemicalFormulaPiece[0] == '('
-                ? true
-                : false;
+        chemicalElems.Add(
+            numberIndex == length
+                ? chemicalFormulaPiece
+                : chemicalFormulaPiece.Substring(0, numberIndex),
+            chemicalElemsMultiplier);
 
-        if (!isParenthesesBlockPresent)
-        {
-            chemicalElems.Add(
-                numberIndex == length
-                    ? chemicalFormulaPiece
-                    : chemicalFormulaPiece.Substring(0, numberIndex),
-                chemicalElemsMultiplier);
+        return chemicalElems;
+    }
 
-            return chemicalElems;
-        }
-
+    /// <summary>
+    /// Возвращает химические элементы в скобках и их количество.
+    /// </summary>
+    /// <param name="chemicalFormulaPiece">Химическая формула.</param>
+    /// <returns>Данные о химических элементах.</returns>
+    private static Dictionary<string, int> GetChemicalElemsParenthesesData(
+        ref string chemicalFormulaPiece)
+    {
+        var length = chemicalFormulaPiece.Length;
         var originalFormula = _formula;
+        var numberIndex = GetNumberIndex(chemicalFormulaPiece);
+        var chemicalElems = new Dictionary<string, int>();
+
+        var chemicalElemsMultiplier =
+            numberIndex == length
+                ? 1
+                : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
 
         // Временная замена химической формулы для работы с выражением в скобках.
         _formula = chemicalFormulaPiece.Substring(
