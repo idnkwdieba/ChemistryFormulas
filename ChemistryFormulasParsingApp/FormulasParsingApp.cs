@@ -11,9 +11,9 @@ internal class FormulasParsingApp
     /// <param name="args">Передаваемые аргументы.</param>
     static void Main(string[] args)
     {
-        Console.WriteLine(FormulasParsing.ParseFormula("H2O"));
-        Console.WriteLine(FormulasParsing.ParseFormula("Cu(OH)2"));
-        Console.WriteLine(FormulasParsing.ParseFormula("C2H5OH"));
+        Console.WriteLine($"H20 => {FormulasParsing.ParseFormula("H2O")}");
+        Console.WriteLine($"Cu(OH)2 => {FormulasParsing.ParseFormula("Cu(OH)2")}");
+        Console.WriteLine($"C2H5OH => {FormulasParsing.ParseFormula("C2H5OH")}");
     }
 }
 
