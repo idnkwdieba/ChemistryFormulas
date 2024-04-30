@@ -46,35 +46,29 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            GetChemicalElemData().ToList().ForEach
-            (
-                elem =>
+            foreach (var chemicalElem in GetChemicalElemData())
+            {
+                // Если такой элемент уже существует в словаре.
+                if (!chemicalElems.TryAdd(chemicalElem.Key, chemicalElem.Value))
                 {
-                    // Если такой элемент уже существует в словаре.
-                    if (!chemicalElems.TryAdd(elem.Key, elem.Value))
-                    {
-                        // Увеличиваем счетчик таких элементов.
-                        chemicalElems[elem.Key] += elem.Value;
-                    }
+                    // Увеличиваем счетчик таких элементов.
+                    chemicalElems[chemicalElem.Key] += chemicalElem.Value;
                 }
-            );
+            }
         }
 
         var remainingCommaCount = chemicalElems.Count - 1;
 
-        chemicalElems.ToList().ForEach
-        (
-            elem =>
-            {
-                result.Append($"{elem.Key}:{elem.Value}");
+        foreach (var elem in chemicalElems)
+        {
+            result.Append($"{elem.Key}:{elem.Value}");
 
-                if (remainingCommaCount > 0)
-                {
-                    result.Append(',');
-                    remainingCommaCount--;
-                }
+            if (remainingCommaCount > 0)
+            {
+                result.Append(',');
+                remainingCommaCount--;
             }
-        );
+        }
 
         return result.ToString();
     }
