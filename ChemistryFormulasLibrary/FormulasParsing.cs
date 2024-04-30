@@ -131,37 +131,49 @@ public class FormulasParsing
     private static int GetChemicalElemEndIndex()
     {
         var chemicalElemEndIndex = 0;
-        var breakFlag = false;
         var isParenthesesBlockClosed = _formula[0] != '(';
+        var symbolType = SymbolType.Other;
 
         while (chemicalElemEndIndex < _length)
         {
-            switch (GetSymbolType(_formula[chemicalElemEndIndex]))
-            {
-                case SymbolType.OpenParenthesis:
-                case SymbolType.Upper:
-                    breakFlag = chemicalElemEndIndex != 0 && isParenthesesBlockClosed;
-                    break;
-                case SymbolType.Digit:
-                    breakFlag = isParenthesesBlockClosed;
-                    chemicalElemEndIndex += Convert.ToInt32(breakFlag);
-                    break;
-                case SymbolType.CloseParenthesis:
-                    isParenthesesBlockClosed = true;
-                    break;
-                default:
-                    break;
-            }
+            symbolType = GetSymbolType(_formula[chemicalElemEndIndex]);
 
-            if (breakFlag)
+            if (IsNewFormulaBlockStarted())
             {
                 break;
+            }
+
+            if (IsFormulaBlockEndedWithDigit())
+            {
+                chemicalElemEndIndex++;
+                break;
+            }
+
+            if (IsParenthesesClosed())
+            {
+                isParenthesesBlockClosed = true;
             }
 
             chemicalElemEndIndex++;
         }
 
         return chemicalElemEndIndex;
+
+        bool IsNewFormulaBlockStarted()
+        {
+            return chemicalElemEndIndex != 0 && isParenthesesBlockClosed
+                && (symbolType == SymbolType.OpenParenthesis || symbolType == SymbolType.Upper);
+        }
+
+        bool IsFormulaBlockEndedWithDigit()
+        {
+            return symbolType == SymbolType.Digit && isParenthesesBlockClosed;
+        }
+
+        bool IsParenthesesClosed()
+        {
+            return symbolType == SymbolType.CloseParenthesis;
+        }
     }
 
     /// <summary>
@@ -219,23 +231,23 @@ public class FormulasParsing
     /// <summary>
     /// Возвращает данные о химическом элементе.
     /// </summary>
-    /// <param name="chemicalFormulaPiece">Часть химической формулы с элементом.</param>
+    /// <param name="chemicalElem">Часть химической формулы с элементом.</param>
     /// <returns>Данные о химическом элементе.</returns>
-    private static Dictionary<string, int> GetChemicalElemData(string chemicalFormulaPiece)
+    private static Dictionary<string, int> GetChemicalElemData(string chemicalElem)
     {
-        var numberIndex = GetNumberIndex(chemicalFormulaPiece);
+        var numberIndex = GetNumberIndex(chemicalElem);
         var chemicalElems = new Dictionary<string, int>();
 
-        if (numberIndex == chemicalFormulaPiece.Length)
+        if (numberIndex == chemicalElem.Length)
         {
-            chemicalElems.Add(chemicalFormulaPiece, 1);
+            chemicalElems.Add(chemicalElem, 1);
 
             return chemicalElems;
         }
 
         chemicalElems.Add(
-            chemicalFormulaPiece.Substring(0, numberIndex),
-            Convert.ToInt32(chemicalFormulaPiece[^1].ToString()));
+            chemicalElem.Substring(0, numberIndex),
+            Convert.ToInt32(chemicalElem[^1].ToString()));
 
         return chemicalElems;
     }
@@ -274,16 +286,16 @@ public class FormulasParsing
     /// <summary>
     /// Заменяет основную химическую формулу на выражение в скобках.
     /// </summary>
-    /// <param name="chemicalFormulaPiece">Заменяющее выражение.</param>
+    /// <param name="newFormula">Заменяющее выражение.</param>
     /// <returns>Исходную формулу.</returns>
-    private static string ReplaceMainFormula(string chemicalFormulaPiece)
+    private static string ReplaceMainFormula(string newFormula)
     {
         var result = _formula;
 
-        _formula = chemicalFormulaPiece.Substring(
+        _formula = newFormula.Substring(
             1,
-            chemicalFormulaPiece.Length -
-                GetNumberIndex(chemicalFormulaPiece) == chemicalFormulaPiece.Length
+            newFormula.Length -
+                GetNumberIndex(newFormula) == newFormula.Length
                     ? 1
                     : 2);
         _length = _formula.Length;
