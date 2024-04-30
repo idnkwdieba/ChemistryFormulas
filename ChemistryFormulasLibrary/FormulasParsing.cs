@@ -19,7 +19,7 @@ public class FormulasParsing
     private static int _length;
 
     /// <summary>
-    /// Типы символов.
+    /// Тип символа.
     /// </summary>
     enum SymbolType
     {
@@ -41,22 +41,19 @@ public class FormulasParsing
         _formula = formula;
         _length = formula.Length;
 
-        var chemicalElems = new Dictionary<string, int>();
+        var chemicalElems = GetChemicalElems();
+
+        return GetChemicalElemsString(chemicalElems);
+    }
+
+    /// <summary>
+    /// Возвращает строку с перечислением химических элементов.
+    /// </summary>
+    /// <param name="chemicalElems">Химические элементы.</param>
+    /// <returns>Строку с перечислением химических элементов.</returns>
+    private static string GetChemicalElemsString(Dictionary<string, int> chemicalElems)
+    {
         var result = new StringBuilder();
-
-        while (_length > 0)
-        {
-            foreach (var chemicalElem in GetChemicalElemData())
-            {
-                // Если такой элемент уже существует в словаре.
-                if (!chemicalElems.TryAdd(chemicalElem.Key, chemicalElem.Value))
-                {
-                    // Увеличиваем счетчик таких элементов.
-                    chemicalElems[chemicalElem.Key] += chemicalElem.Value;
-                }
-            }
-        }
-
         var remainingCommaCount = chemicalElems.Count - 1;
 
         foreach (var elem in chemicalElems)
@@ -71,6 +68,30 @@ public class FormulasParsing
         }
 
         return result.ToString();
+    }
+
+    /// <summary>
+    /// Возвращает химические элементы и их количество.
+    /// </summary>
+    /// <returns>Химические элементы и их количество.</returns>
+    private static Dictionary<string, int> GetChemicalElems()
+    {
+        var result = new Dictionary<string, int>();
+
+        while (_length > 0)
+        {
+            foreach (var chemicalElem in GetChemicalElemData())
+            {
+                // Если такой элемент уже существует в словаре.
+                if (!result.TryAdd(chemicalElem.Key, chemicalElem.Value))
+                {
+                    // Увеличиваем счетчик таких элементов.
+                    result[chemicalElem.Key] += chemicalElem.Value;
+                }
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -170,17 +191,13 @@ public class FormulasParsing
     {
         var chemicalElemEndIndex = GetChemicalElemEndIndex();
 
-        string curChemicalElem;
+        var curChemicalElem = chemicalElemEndIndex == _length
+            ? _formula
+            : _formula.Substring(0, chemicalElemEndIndex);
 
-        curChemicalElem =
-            chemicalElemEndIndex == _length
-                ? _formula
-                : _formula.Substring(0, chemicalElemEndIndex);
-
-        _formula =
-            chemicalElemEndIndex >= _length
-                ? string.Empty
-                : _formula.Substring(chemicalElemEndIndex);
+        _formula = chemicalElemEndIndex >= _length
+            ? string.Empty
+            : _formula.Substring(chemicalElemEndIndex);
 
         _length = _formula.Length;
 
@@ -196,7 +213,7 @@ public class FormulasParsing
         var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
 
         // Если химические элементы обернуты в скобки.
-        if (chemicalFormulaPiece[0] == '(')
+        if (chemicalFormulaPiece[0].Equals('('))
         {
             return GetChemicalElemsParenthesesData(ref chemicalFormulaPiece);
         }
@@ -212,6 +229,7 @@ public class FormulasParsing
             return chemicalElems;
         }
 
+        // Если после химического элемента следует число.
         chemicalElems.Add(
             chemicalFormulaPiece.Substring(0, numberIndex),
             Convert.ToInt32(chemicalFormulaPiece[^1].ToString()));
@@ -232,10 +250,9 @@ public class FormulasParsing
         var numberIndex = GetNumberIndex(chemicalFormulaPiece);
         var chemicalElems = new Dictionary<string, int>();
 
-        var chemicalElemsMultiplier =
-            numberIndex == length
-                ? 1
-                : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
+        var chemicalElemsMultiplier = numberIndex == length
+            ? 1
+            : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
 
         // Временная замена химической формулы для работы с выражением в скобках.
         _formula = chemicalFormulaPiece.Substring(
