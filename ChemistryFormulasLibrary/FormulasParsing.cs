@@ -4,6 +4,14 @@ using System.Collections.Generic;
 using System.Text;
 
 /// <summary>
+/// Тип символа.
+/// </summary>
+enum SymbolType
+{
+    OpenParenthesis, CloseParenthesis, Digit, Upper, Other
+}
+
+/// <summary>
 /// Парсинг химических формул.
 /// </summary>
 public class FormulasParsing
@@ -17,14 +25,6 @@ public class FormulasParsing
     /// Длина строки химической формулы.
     /// </summary>
     private static int _length;
-
-    /// <summary>
-    /// Тип символа.
-    /// </summary>
-    enum SymbolType
-    {
-        OpenParenthesis, CloseParenthesis, Digit, Upper, Other
-    }
 
     /// <summary>
     /// Возвращает результат парсинга химической формулы.
