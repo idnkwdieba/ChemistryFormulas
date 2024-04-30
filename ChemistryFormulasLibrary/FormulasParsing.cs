@@ -241,23 +241,14 @@ public class FormulasParsing
     private static Dictionary<string, int> GetChemicalElemsParenthesesData(
         ref string chemicalFormulaPiece)
     {
-        var length = chemicalFormulaPiece.Length;
-        var originalFormula = _formula;
-        var numberIndex = GetNumberIndex(chemicalFormulaPiece);
         var chemicalElems = new Dictionary<string, int>();
 
-        var chemicalElemsMultiplier = numberIndex == length
-            ? 1
-            : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
+        var chemicalElemsMultiplier =
+            GetNumberIndex(chemicalFormulaPiece) == chemicalFormulaPiece.Length
+                ? 1
+                : Convert.ToInt32(chemicalFormulaPiece[^1].ToString());
 
-        // Временная замена химической формулы для работы с выражением в скобках.
-        _formula = chemicalFormulaPiece.Substring(
-            1,
-            chemicalFormulaPiece.Length -
-                numberIndex == length
-                    ? 1
-                    : 2);
-        _length = _formula.Length;
+        var originalFormula = ReplaceMainFormula(chemicalFormulaPiece);
 
         while (_length > 0)
         {
@@ -271,5 +262,25 @@ public class FormulasParsing
         _length = originalFormula.Length;
 
         return chemicalElems;
+    }
+
+    /// <summary>
+    /// Заменяет основную химическую формулу на выражение в скобках.
+    /// </summary>
+    /// <param name="chemicalFormulaPiece">Заменяющее выражение.</param>
+    /// <returns>Исходную формулу.</returns>
+    private static string ReplaceMainFormula(string chemicalFormulaPiece)
+    {
+        var result = _formula;
+
+        _formula = chemicalFormulaPiece.Substring(
+            1,
+            chemicalFormulaPiece.Length -
+                GetNumberIndex(chemicalFormulaPiece) == chemicalFormulaPiece.Length
+                    ? 1
+                    : 2);
+        _length = _formula.Length;
+
+        return result;
     }
 }
