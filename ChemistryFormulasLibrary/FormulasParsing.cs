@@ -19,6 +19,14 @@ public class FormulasParsing
     private static int _length;
 
     /// <summary>
+    /// Типы символов.
+    /// </summary>
+    enum SymbolType
+    {
+        OpenParenthesis, CloseParenthesis, Digit, Upper, Other
+    }
+
+    /// <summary>
     /// Возвращает результат парсинга химической формулы.
     /// </summary>
     /// <param name="formula">Химическая формула для парсинга.</param>
@@ -72,39 +80,71 @@ public class FormulasParsing
     }
 
     /// <summary>
+    /// Возвращает тип символа.
+    /// </summary>
+    /// <param name="symbol">Символ для определения типа.</param>
+    /// <returns>Тип символа.</returns>
+    private static SymbolType GetSymbolType(char symbol)
+    {
+        if (symbol.Equals('('))
+        {
+            return SymbolType.OpenParenthesis;
+        }
+
+        if (symbol.Equals(')'))
+        {
+            return SymbolType.CloseParenthesis;
+        }
+
+        if (char.IsDigit(symbol))
+        {
+            return SymbolType.Digit;
+        }
+
+        if (char.IsUpper(symbol))
+        {
+            return SymbolType.Upper;
+        }
+
+        return SymbolType.Other;
+    }
+
+    /// <summary>
     /// Возвращает индекс следующего химического элемента в формуле.
     /// </summary>
     /// <returns>Индекс следующего химического элемента в формуле.</returns>
     private static int GetChemicalElemEndIndex()
     {
         var chemicalElemEndIndex = 0;
+        var currentSymbol = _formula[0];
+        var breakFlag = false;
 
-        var isParenthesesBlockClosed = _formula[0] != '(';
+        var isParenthesesBlockClosed = !currentSymbol.Equals('(');
 
         while (chemicalElemEndIndex < _length)
         {
-            if (chemicalElemEndIndex != 0
-                && (char.IsUpper(_formula[chemicalElemEndIndex])
-                    || _formula[chemicalElemEndIndex] == '('))
+            currentSymbol = _formula[chemicalElemEndIndex];
+
+            switch (GetSymbolType(currentSymbol))
             {
-                if (isParenthesesBlockClosed)
-                {
+                case SymbolType.OpenParenthesis:
+                case SymbolType.Upper:
+                    breakFlag = chemicalElemEndIndex != 0 && isParenthesesBlockClosed;
                     break;
-                }
+                case SymbolType.Digit:
+                    breakFlag = isParenthesesBlockClosed;
+                    chemicalElemEndIndex += Convert.ToInt32(breakFlag);
+                    break;
+                case SymbolType.CloseParenthesis:
+                    isParenthesesBlockClosed = true;
+                    break;
+                default:
+                    break;
             }
 
-            if (char.IsDigit(_formula[chemicalElemEndIndex]))
+            if (breakFlag)
             {
-                if (isParenthesesBlockClosed)
-                {
-                    chemicalElemEndIndex++;
-                    break;
-                }
-            }
-
-            if (_formula[chemicalElemEndIndex] == ')')
-            {
-                isParenthesesBlockClosed = true;
+                break;
             }
 
             chemicalElemEndIndex++;
@@ -112,7 +152,6 @@ public class FormulasParsing
 
         return chemicalElemEndIndex;
     }
-
 
     /// <summary>
     /// Возвращает индекс числа в химическом элементе.
@@ -138,7 +177,6 @@ public class FormulasParsing
         var chemicalElemEndIndex = GetChemicalElemEndIndex();
 
         string curChemicalElem;
-        string curChemicalElemCount;
 
         curChemicalElem =
             chemicalElemEndIndex == _length
@@ -216,7 +254,7 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            foreach(var elem in GetChemicalElemData())
+            foreach (var elem in GetChemicalElemData())
             {
                 chemicalElems.Add(elem.Key, elem.Value * chemicalElemsMultiplier);
             }
