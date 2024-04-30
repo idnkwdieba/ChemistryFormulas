@@ -80,7 +80,7 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            foreach (var chemicalElem in GetChemicalElemData())
+            foreach (var chemicalElem in GetChemicalElemsData())
             {
                 // Если такой элемент уже существует в словаре.
                 if (!result.TryAdd(chemicalElem.Key, chemicalElem.Value))
@@ -204,20 +204,28 @@ public class FormulasParsing
     /// Возвращает химические элементы и их количество.
     /// </summary>
     /// <returns>Данные о химических элементах.</returns>
-    private static Dictionary<string, int> GetChemicalElemData()
+    private static Dictionary<string, int> GetChemicalElemsData()
     {
         var chemicalFormulaPiece = GetCurrentChemicalFormulaPiece();
 
-        // Если химические элементы обернуты в скобки.
         if (chemicalFormulaPiece[0].Equals('('))
         {
             return GetChemicalElemsParenthesesData(ref chemicalFormulaPiece);
         }
 
+        return GetChemicalElemData(chemicalFormulaPiece);
+    }
+
+    /// <summary>
+    /// Возвращает данные о химическом элементе.
+    /// </summary>
+    /// <param name="chemicalFormulaPiece">Часть химической формулы с элементом.</param>
+    /// <returns>Данные о химическом элементе.</returns>
+    private static Dictionary<string, int> GetChemicalElemData(string chemicalFormulaPiece)
+    {
         var numberIndex = GetNumberIndex(chemicalFormulaPiece);
         var chemicalElems = new Dictionary<string, int>();
 
-        // Если после химического элемента не следует число.
         if (numberIndex == chemicalFormulaPiece.Length)
         {
             chemicalElems.Add(chemicalFormulaPiece, 1);
@@ -225,7 +233,6 @@ public class FormulasParsing
             return chemicalElems;
         }
 
-        // Если после химического элемента следует число.
         chemicalElems.Add(
             chemicalFormulaPiece.Substring(0, numberIndex),
             Convert.ToInt32(chemicalFormulaPiece[^1].ToString()));
@@ -252,7 +259,7 @@ public class FormulasParsing
 
         while (_length > 0)
         {
-            foreach (var elem in GetChemicalElemData())
+            foreach (var elem in GetChemicalElemsData())
             {
                 chemicalElems.Add(elem.Key, elem.Value * chemicalElemsMultiplier);
             }
