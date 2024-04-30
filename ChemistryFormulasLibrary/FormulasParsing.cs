@@ -4,14 +4,6 @@ using System.Collections.Generic;
 using System.Text;
 
 /// <summary>
-/// Тип символа.
-/// </summary>
-enum SymbolType
-{
-    OpenParenthesis, CloseParenthesis, Digit, Upper, Other
-}
-
-/// <summary>
 /// Парсинг химических формул.
 /// </summary>
 public class FormulasParsing
@@ -95,48 +87,18 @@ public class FormulasParsing
     }
 
     /// <summary>
-    /// Возвращает тип символа.
-    /// </summary>
-    /// <param name="symbol">Символ для определения типа.</param>
-    /// <returns>Тип символа.</returns>
-    private static SymbolType GetSymbolType(char symbol)
-    {
-        if (symbol.Equals('('))
-        {
-            return SymbolType.OpenParenthesis;
-        }
-
-        if (symbol.Equals(')'))
-        {
-            return SymbolType.CloseParenthesis;
-        }
-
-        if (char.IsDigit(symbol))
-        {
-            return SymbolType.Digit;
-        }
-
-        if (char.IsUpper(symbol))
-        {
-            return SymbolType.Upper;
-        }
-
-        return SymbolType.Other;
-    }
-
-    /// <summary>
     /// Возвращает индекс следующего химического элемента в формуле.
     /// </summary>
     /// <returns>Индекс следующего химического элемента в формуле.</returns>
     private static int GetChemicalElemEndIndex()
     {
         var chemicalElemEndIndex = 0;
-        var isParenthesesBlockClosed = _formula[0] != '(';
-        var symbolType = SymbolType.Other;
+        var currentSymbol = _formula[0];
+        var isParenthesesBlockClosed = currentSymbol != '(';
 
         while (chemicalElemEndIndex < _length)
         {
-            symbolType = GetSymbolType(_formula[chemicalElemEndIndex]);
+            currentSymbol = _formula[chemicalElemEndIndex];
 
             if (IsNewFormulaBlockStarted())
             {
@@ -162,17 +124,17 @@ public class FormulasParsing
         bool IsNewFormulaBlockStarted()
         {
             return chemicalElemEndIndex != 0 && isParenthesesBlockClosed
-                && (symbolType == SymbolType.OpenParenthesis || symbolType == SymbolType.Upper);
+                && (currentSymbol == '(' || char.IsUpper(currentSymbol));
         }
 
         bool IsFormulaBlockEndedWithDigit()
         {
-            return symbolType == SymbolType.Digit && isParenthesesBlockClosed;
+            return char.IsDigit(currentSymbol) && isParenthesesBlockClosed;
         }
 
         bool IsParenthesesClosed()
         {
-            return symbolType == SymbolType.CloseParenthesis;
+            return currentSymbol == ')';
         }
     }
 
