@@ -131,16 +131,12 @@ public class FormulasParsing
     private static int GetChemicalElemEndIndex()
     {
         var chemicalElemEndIndex = 0;
-        var currentSymbol = _formula[0];
         var breakFlag = false;
-
-        var isParenthesesBlockClosed = !currentSymbol.Equals('(');
+        var isParenthesesBlockClosed = _formula[0] != '(';
 
         while (chemicalElemEndIndex < _length)
         {
-            currentSymbol = _formula[chemicalElemEndIndex];
-
-            switch (GetSymbolType(currentSymbol))
+            switch (GetSymbolType(_formula[chemicalElemEndIndex]))
             {
                 case SymbolType.OpenParenthesis:
                 case SymbolType.Upper:
